@@ -309,3 +309,46 @@ We will have **analysis workers** to:
 * Updates state database with results
 
 ![communication](./report-materials/communication.png)
+
+## Performance Considerations
+
+### Assumptions
+* Average posts per account: 150 posts (70% images, 30% videos)
+* Average video length: 30 seconds
+* Frame extraction rate: 5 frames per minute
+* Total images to process: ~218 (105 original images + 113 video frames)
+
+---
+
+### Processing Options
+
+| Approach | Text Extraction | Code Detection | Time per Account | Cost per Account | Memory |
+|----------|----------------|----------------|------------------|------------------|---------|
+| **Budget** | OCR  | Rule-based | ~10.5 min | $0 | ~1GB |
+| **Balanced** | OCR | Local LLM | ~12.7 min | $0 | ~2.3GB |
+| **Accuracy** | API LLM | API LLM | ~29 min | ~$3.27 | ~2.3GB |
+
+### Time Breakdown by Phase
+
+| Phase | Budget | Balanced | Accuracy |
+|-------|--------|----------|----------|
+| Download (150 posts) | 6.25 min | 6.25 min | 6.25 min |
+| Frame Extraction (45 videos) | 1.1 min | 1.1 min | 1.1 min |
+| Text Extraction | 2.7 min (OCR) | 2.7 min (OCR) | 10.9 min (LLM) |
+| Code Detection | 0.4 min (Rules) | 2.7 min (LLM) | 10.9 min (LLM) |
+
+### Parallel Processing Impact
+
+| Workers | Budget | Balanced | Accuracy |
+|---------|--------|----------|----------|
+| 1 worker | 10.5 min | 12.7 min | 29 min |
+| 4 workers | ~3 min | ~3.5 min | ~7.5 min |
+| 8 workers | ~1.5 min | ~2 min | ~4 min |
+
+### Scalability
+
+| Accounts | Budget (Time / Cost) | Balanced (Time / Cost) | Accuracy (Time / Cost) |
+|----------|----------------------|------------------------|------------------------|
+| 10 | 1.75 hrs / $0 | 2.1 hrs / $0 | 4.8 hrs / $32.70 |
+| 50 | 8.75 hrs / $0 | 10.6 hrs / $0 | 24.2 hrs / $163.50 |
+| 100 | 17.5 hrs / $0 | 21.2 hrs / $0 | 48.3 hrs / $327 |
