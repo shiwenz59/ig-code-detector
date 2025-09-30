@@ -195,3 +195,95 @@ Extracting frames...
 ```
 
 ### Unified code detection from texts
+
+The final stage of our pipeline is detecting whether extracted text contains code. We have two approaches: rule-based detection and LLM-based detection. 
+
+#### Rule-based Detection (usig custom program)
+
+We use pattern matching to identify code characteristics without external API calls. We look for multiple code indicators:
+* Syntax patterns, like `def`, `function`, `=`, `+`, `let`, `const`
+* Structural Features, like `{}`, `;`, `[]`
+* Code-specific symbols, like `=>`, `lambda`, `.method()` 
+
+From those key characteristics, we can build a scoring system, like the one below. This approach is fast, predictable, and scalable.
+```
+confidence_score = weighted_sum([
+    keyword_density * 0.30,
+    syntax_pattern_matches * 0.25,
+    structural_score * 0.20,
+    naming_convention_score * 0.15,
+    comment_presence * 0.10
+])
+```
+
+#### LLM-based Detection
+
+Different from the earlier API solution via multimodal LLMs, since we are dealing with text files during this stage, we can use locally-hosted LLMs via [ollama](https://ollama.com/) for code detection. Benefits include no API costs, offline capable, faster inference.
+
+**Experiment**: I use the smallest `1b` model using `ollama run llama3.2:1b`, which takes around 2.3G RAM and runs smoothly on my MacBook Air. The result is accurate and fast. I use the below prompt:
+```
+def _build_prompt(self, text: str) -> str:
+    return f"""Does this contain programming code?
+{text[:800]}
+Respond only in JSON:
+{{"is_code": true/false, "confidence": 0.0-1.0, "languages": [], "type": "snippet/program/config/none"}}"""
+```
+
+## Output: Report
+
+In general, the generated report contains the following key sections:
+* Account summary
+* Detection results
+* Content-level details
+* Metadata
+We format the reports in JSON.
+
+```
+{
+  "report_metadata": {
+    "account_username": "teddavisdotorg",
+    "account_url": "https://www.instagram.com/teddavisdotorg/",
+    "generated_at": "2025-09-30T12:00:00Z",
+    "pipeline_version": "1.0",
+    "total_processing_time_minutes": 45.5
+  },
+  "summary": {
+    "total_posts_analyzed": 150,
+    "posts_with_code": 87,
+    "posts_without_code": 63,
+    "code_detection_rate": 0.58,
+    "images_analyzed": 120,
+    "videos_analyzed": 30,
+    "average_confidence": 0.82
+  },
+  "language_distribution": {
+    "python": 45,
+    "javascript": 32,
+    "processing": 18,
+    "java": 12,
+    "other": 5
+  },
+  "detected_contents": [
+    {
+      "content_id": "C12345ABC",
+      "content_url": "https://www.instagram.com/p/C12345ABC/",
+      "content_type": "video",
+      "posted_at": "2025-09-15T14:22:00Z",
+      "contains_code": true,
+      "confidence": 0.87,
+      "detection_method": "LLM",
+      "languages_detected": ["processing", "javascript"],
+      "code_frames": [0, 5, 12, 18, 29],
+      "total_frames_analyzed": 45,
+      "code_snippet_preview": "live_loop :tanpura do\n  with_fx :ixi_techno..."
+    }
+  ],
+  "processing_stats": {
+    "download_duration_minutes": 20.3,
+    "analysis_duration_minutes": 25.2,
+    "failed_downloads": 0,
+    "failed_analyses": 0
+  },
+  "errors": []
+}
+```
