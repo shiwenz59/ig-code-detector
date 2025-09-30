@@ -110,3 +110,88 @@ python download_demo.py <instagram_username>
 ```
 
 One **blocker** we have, which causes the program to fail, is Instagram's anti-crawling mechanism. I would need more time to figure out how to download posts legally and effectively.
+```
+JSON Query to graphql/query: 403 Forbidden
+JSON Query to graphql/query: 401 Unauthorized
+```
+
+## Detector Module
+
+We are dealing with three media types: image, video, and caption. However, if we look closer, all code deetection reduces to text analysis. Since code is fundamentally text, we convert all media types to text, then apply a single unified detection algorithm.
+
+![detection-pipeline](./report-materials/detection-pipeline.png)
+As you can see, we need three modules for this pipeline:
+1. Text extraction from images
+2. Frame extraction from videos
+3. Unified code detection from texts
+
+### Text extraction from images (using OCR)
+
+We will use local OCR [tesseract](https://github.com/tesseract-ocr/tesseract) to extract texts from images.
+
+To install the module, run:
+```
+brew install tesseract
+pip3 install pytesseract Pillow
+```
+
+**Experiment**: when we input the following image content from [nanditi.k](https://www.instagram.com/nanditi.k/) into the module, we get the text extracted below. Notice that the result is not precise but good enough for code detection.
+![image-example](./report-materials/image-example.png)
+```
+Extracting text from: /Users/shiwenzhu/Desktop/image-example.png
+============================================================
+CRAFTY
+=) MELODIES
+
+See WITH ALGORITHMS & fie
+PUZZLE CANONS
+
+Live_loop :taanbot | |
+with_fx :ixi_tee{fiii= TTT ae
+use_random_ See il |
+use_synth :plt
+= [0.125, 0.
+16.times do
+| r = (0.125, 0.25, 0.5].choose
+n = (ring :c3, :d3, :e3, :fs3,
+| | :fs4, :c5, :d4, :e4, :94,
+co = rrand(30, 100)
+sus = rrand(0, 0.25)
+play n, release: r, cutoff: co
+| sleep s
+| end
+end
+end RY)
+```
+
+### Text extraction from images (using LLM)
+
+While OCR tools are fast and work offline, they can struggle with more complex backgrounds or overlapping text, unusual fonts, mixed content, and etc. To improve extraction accuracy, we can use multimodal LLMs (such as Claude and Gemini). **We will use API calls.** However, we then face the trade-off of having higher cost ($0.01 per image) and slower speed (3 seconds per image).
+
+### Frame extraction from videos
+
+We use [OpenCY](https://pypi.org/project/opencv-python/) which is in python standard library for our video to images processing.
+
+To install the module, run:
+```
+pip3 install opencv-python
+```
+
+**Experiment**: when we input the linked [video](./report-materials/video-example.mov) into the module, we get the extracted [frame1](./extracted_frames/video-example_frame_0000_t0.00s.jpg) and [frame2](./extracted_frames/video-example_frame_0001_t11.97s.jpg) stored as .jpg files in our directory.
+```
+Video Properties:
+  - FPS: 29.98
+  - Total Frames: 642
+  - Duration: 21.41 seconds (0.36 minutes)
+  - Extracting 5 frames per minute
+
+Extracting 1 frame every 359 frames (12.0 seconds)
+
+Extracting frames...
+
+✓ Extraction complete!
+  - Total frames extracted: 2
+  - Frames saved to: ./extracted_frames
+```
+
+### Unified code detection from texts

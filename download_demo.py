@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-Simple demonstration script to download Instagram account media
 Usage: python download_demo.py <account_username>
 """
 
