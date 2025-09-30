@@ -287,3 +287,25 @@ We format the reports in JSON.
   "errors": []
 }
 ```
+
+## Module Integration
+
+We will have the **main orchestrator** to:
+* Reads input accounts
+* Initializes state database
+* Spawns worker pools
+* Monitor progress
+* Generates reports when complete
+
+We will have **download workers** to:
+* Pulls content from download queue
+* Updates state database
+* Uses the download module to fetch media
+
+We will have **analysis workers** to:
+* Pulls from analysis queue
+* Routes to appropriate detector
+* Extracts text, then detects code
+* Updates state database with results
+
+![communication](./report-materials/communication.png)
