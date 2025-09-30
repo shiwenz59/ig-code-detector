@@ -97,3 +97,16 @@ Notice that we not yet have the content-specific statuses until we start discove
 ```
 
 ## Download Module
+
+We are using github repo [instaloader](https://github.com/instaloader/instaloader?tab=readme-ov-file) to download all posts (including medias and captions) under an account.
+
+To install the module, run:
+```
+pip3 install instaloader
+```
+To test the download functionality, we use the demo script:
+```
+python download_demo.py <instagram_username>
+```
+
+One **blocker** we have, which causes the program to fail, is Instagram's anti-crawling mechanism. I would need more time to figure out how to download posts legally and effectively.
