@@ -21,3 +21,7 @@ To summarize, the elements we have in the pipeline are:
 * Module to detect codes in one piece of content
 * Temporary database to store downloaded contents
 * Database to hold output reports
+
+## Input and UI
+![ui](./report-materials/ui.001.png)
+Users can input a list of links to the account they wish to be examined. Once they started the program, they will be able to track the process of the program, including how many accounts and contents have been detected as well as the status of generated reports.
